@@ -1,0 +1,91 @@
+<div class="main">
+  <div class="main-landing">
+    <div class="main-nav">
+      <div class="main-logo">
+        <img src="../../../assets/1/logo.svg" />
+      </div>
+      <div class="main-socials">
+        <img src="../../../assets/1/twitter.svg" />
+        <img src="../../../assets/1/bsc.svg" />
+        <img src="../../../assets/1/tg.svg" />
+        <img src="../../../assets/1/uniswap.svg" />
+      </div>
+      <div class="main-buttons">
+        <button class="main-button" style="margin-right: 1em">
+          BUY ON UNISWAP
+        </button>
+
+        <button class="main-button" (click)="connect()" *ngIf="!isConnected">
+          CONNECT WALLET
+        </button>
+        <div class="connected">
+          <span *ngIf="isConnected"
+            >...{{
+              selectedAddress.substring(
+                selectedAddress.length,
+                selectedAddress.length - 4
+              )
+            }}</span
+          >
+
+          <span *ngIf="isConnected">$main {{ hodlToken.toFixed(4) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-hero">
+      <div class="main-hero-left">
+        <h3>SCHEDULED REWARD:</h3>
+
+        <div class="total-reward">
+          TOTAL ETH REWARDS: {{ this.totalEthRewards }}
+        </div>
+        <div class="schedule-reward">
+          <label>EXECUTION TIME:</label>
+          <p id="days"></p>
+          <p id="hours"></p>
+          <p id="mins"></p>
+          <p id="secs"></p>
+        </div>
+      </div>
+
+      <div class="main-hero-left">
+        <h3>MEGA JACKPOT REWARD:</h3>
+
+        <div class="total-reward">
+          TOTAL TOKEN HODL: {{ hodlToken.toFixed(4) }}
+        </div>
+        <div class="total-reward">REWARD POINTS: 123 points</div>
+        <div class="total-reward">
+          IDLE TIME TO WIN MEGA JACKPOT: {{ idleTime }}
+        </div>
+
+        <div class="total-reward">LAST BUYER: {{ lastBuyer }}</div>
+        <div class="total-reward">LAST BUY TIME: {{ lastBuyDate }}</div>
+
+        <div class="total-reward">
+          TIME MEGA JACKPOT EXECUTION {{ megaJackpotExecutionTime }}
+          <div class="schedule-reward">
+            <label>EXECUTION TIME:</label>
+            <p id="days_mega"></p>
+            <p id="hours_mega"></p>
+            <p id="mins_mega"></p>
+            <p id="secs_mega"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal" *ngIf="isLoading" (click)="closeModal()">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close" (click)="closeModal()">&times;</span>
+        <div class="modal-content-main">
+          <p class="loading" *ngIf="!loadingMessage">Loading....</p>
+          <p class="message" *ngIf="loadingMessage">{{ loadingMessage }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
