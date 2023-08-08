@@ -20,17 +20,85 @@ export class MainComponent extends MetamaskBase implements OnInit {
   ca: string = '';
   isCountDownEndScheduled: boolean = false;
   totalEthRewards: string = '0';
+  totalEthRewardsMega: string = '0';
   idleTime: number = 0;
   lastBuyer: string = '';
   lastBuyDate: string = '';
   lastBuyHoursDiff: string = '';
   megaJackpotExecutionTime: string = '';
+  points: number = 0;
+  totalPoints: number = 0;
 
+  chanceOfWinning: string = '';
   constructor(private http: HttpClient) {
     super();
   }
 
   ngOnInit(): void {
+    document.addEventListener(
+      'scroll',
+      (event) => {
+        var reveals = document.querySelectorAll('.flipInX');
+
+        for (var i = 0; i < reveals.length; i++) {
+          var windowHeight = window.innerHeight;
+          var elementTop = reveals[i].getBoundingClientRect().top;
+          var elementVisible = 150;
+
+          if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add('active');
+          } else {
+            reveals[i].classList.remove('active');
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener(
+      'scroll',
+      (event) => {
+        var reveals = document.querySelectorAll('.fadeInLeftBig');
+
+        for (var i = 0; i < reveals.length; i++) {
+          var windowHeight = window.innerHeight;
+          var elementTop = reveals[i].getBoundingClientRect().top;
+          var elementVisible = 150;
+
+          if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add('active');
+          } else {
+            reveals[i].classList.remove('active');
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener(
+      'scroll',
+      (event) => {
+        var reveals = document.querySelectorAll('.fadeIn');
+
+        for (var i = 0; i < reveals.length; i++) {
+          var windowHeight = window.innerHeight;
+          var elementTop = reveals[i].getBoundingClientRect().top;
+          var elementVisible = 150;
+
+          if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add('active');
+          } else {
+            reveals[i].classList.remove('active');
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    if (env.ca) {
+      this.ca = env.ca;
+    }
+
     if (this.ethObj) {
       try {
         this.ethObj.request({ method: 'net_version' }).then((net: any) => {
@@ -47,7 +115,7 @@ export class MainComponent extends MetamaskBase implements OnInit {
               if (accounts) {
                 if (accounts.length > 0) {
                   this.selectedAddress = accounts[0];
-                  //  this.selectedAddress = "0x8531E44b4C6feAAEbBf758c70fb16f44442d9ffA";
+
                   this.isConnected = true;
 
                   const web3 = new Web3(
@@ -61,12 +129,13 @@ export class MainComponent extends MetamaskBase implements OnInit {
                     .balanceOf(this.selectedAddress)
                     .call()
                     .then(async (response: any) => {
-                      console.log(response);
                       this.hodlToken = parseFloat(
                         parseFloat(
                           Web3.utils.fromWei(response, 'ether')
                         ).toFixed(2)
                       );
+
+                      this.callUserDetail();
                     });
                 } else {
                 }
@@ -105,12 +174,17 @@ export class MainComponent extends MetamaskBase implements OnInit {
     this.getLastBuyer();
     this.getIdleTime();
     this.getLastBuyTime();
-    this.getLastBuyer();
+
     this.getMegaJackpotExecutionTime();
+    this.getTotalPointsExt();
+  }
+
+  callUserDetail() {
+    this.getPoints();
   }
 
   getScheduledRewardDate() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
     var contract = new web3.eth.Contract(abi, env.ca);
 
     contract.methods
@@ -119,7 +193,7 @@ export class MainComponent extends MetamaskBase implements OnInit {
       .call()
       .then(async (response: any) => {
         console.log(response);
-        this.scheduledCountDown(1691339916);
+        this.scheduledCountDown(parseFloat(response));
       });
   }
 
@@ -161,17 +235,18 @@ export class MainComponent extends MetamaskBase implements OnInit {
   }
 
   getTotalEthRewards() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
 
     console.log(web3.eth.getBalance(env.ca));
     web3.eth.getBalance(env.ca).then(async (response: any) => {
       const rew = Web3.utils.fromWei(response, 'ether');
       this.totalEthRewards = (parseFloat(rew) / 2).toFixed(2);
+      this.totalEthRewardsMega = parseFloat(rew).toFixed(2);
     });
   }
 
   getIdleTime() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
     var contract = new web3.eth.Contract(abi, env.ca);
 
     contract.methods
@@ -179,12 +254,13 @@ export class MainComponent extends MetamaskBase implements OnInit {
       .getMegaRewardIdle()
       .call()
       .then(async (response: any) => {
-        this.idleTime = 48;
+        // var item = new Number(response);
+        this.idleTime = parseFloat(response);
       });
   }
 
   getLastBuyer() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
     var contract = new web3.eth.Contract(abi, env.ca);
 
     contract.methods
@@ -197,7 +273,7 @@ export class MainComponent extends MetamaskBase implements OnInit {
   }
 
   getLastBuyTime() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
     var contract = new web3.eth.Contract(abi, env.ca);
 
     contract.methods
@@ -206,28 +282,67 @@ export class MainComponent extends MetamaskBase implements OnInit {
       .call()
       .then(async (response: any) => {
         var d = new Date(0);
-        d.setUTCSeconds(1691327532);
+        d.setUTCSeconds(parseFloat(response));
 
         this.lastBuyDate = this.formatDate(d);
+
+        var lastBuyTime = new Date(0);
+        lastBuyTime.setUTCSeconds(parseFloat(response));
+
+        var aimDate = lastBuyTime.setTime(
+          lastBuyTime.getTime() + this.idleTime * 60 * 60 * 1000
+        );
+
+        this.scheduledMegaCountDown(aimDate);
       });
   }
 
   getMegaJackpotExecutionTime() {
-    const web3 = new Web3(this.ethObj);
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
     var contract = new web3.eth.Contract(abi, env.ca);
 
     contract.methods
       // @ts-ignore
-      .getLastBuyTime()
+      .getMegaJackpotExecutionTime()
       .call()
       .then(async (response: any) => {
         console.log(response);
 
         var d = new Date(0);
-        d.setUTCSeconds(1691339916);
+        d.setUTCSeconds(parseFloat(response));
 
         this.megaJackpotExecutionTime = this.formatDate(d);
-        this.scheduledMegaCountDown(1691339916);
+        //this.scheduledMegaCountDown(parseFloat(response));
+      });
+  }
+
+  getPoints() {
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
+    var contract = new web3.eth.Contract(abi, env.ca);
+
+    contract.methods
+      // @ts-ignore
+      .getPoints(this.selectedAddress)
+      .call()
+      .then(async (response: any) => {
+        this.points = parseFloat(response);
+
+        this.chanceOfWinning = ((this.points / this.totalPoints) * 100).toFixed(
+          0
+        );
+      });
+  }
+
+  getTotalPointsExt() {
+    const web3 = new Web3(new Web3.providers.HttpProvider(env.rpc));
+    var contract = new web3.eth.Contract(abi, env.ca);
+
+    contract.methods
+      // @ts-ignore
+      .getTotalPointsExt()
+      .call()
+      .then(async (response: any) => {
+        this.totalPoints = parseFloat(response);
       });
   }
 
@@ -275,12 +390,8 @@ export class MainComponent extends MetamaskBase implements OnInit {
     )} ${date.getDate()},${date.getFullYear()} ${strTime}`;
   }
 
-  scheduledMegaCountDown(epochDate: any) {
-    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(epochDate);
-
-    var countDownDate = d.getTime();
-
+  scheduledMegaCountDown(epochDateLastBuyTime: any) {
+    var countDownDate = epochDateLastBuyTime;
     var myfunc = setInterval(() => {
       var now = new Date().getTime();
       var timeleft = countDownDate - now;
@@ -308,5 +419,8 @@ export class MainComponent extends MetamaskBase implements OnInit {
         document.getElementById('secs_mega')!.innerHTML = '0s';
       }
     }, 1000);
+  }
+  copyCa() {
+    navigator.clipboard.writeText(env.ca);
   }
 }
